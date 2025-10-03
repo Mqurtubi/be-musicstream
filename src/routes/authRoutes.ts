@@ -10,11 +10,15 @@ const router = Router();
 
 router.get("/login", (req, res) => {
   const scope = "user-read-private user-read-email playlist-read-private";
-  const authUrl = `https://accounts.spotify.com/authorize?response_type=code&client_id=${
-    process.env.CLIENT_ID
-  }&scope=${encodeURIComponent(scope)}&redirect_uri=${encodeURIComponent(
-    process.env.REDIRECT_URI || ""
-  )}`;
+  const authUrl =
+    "https://accounts.spotify.com/authorize" +
+    "?response_type=code" +
+    "&client_id=" +
+    process.env.CLIENT_ID +
+    "&scope=" +
+    encodeURIComponent(scope) +
+    "&redirect_uri=" +
+    encodeURIComponent(process.env.REDIRECT_URI);
 
   res.redirect(authUrl);
 });
