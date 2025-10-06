@@ -22,9 +22,9 @@ export async function getTokenFromCode(
   const { data } = await axios.post<SpotifyTokenResponse>(
     tokenUrl,
     qs.stringify({
+      grant_type: "authorization_code",
       code,
       redirect_uri: env.redirectUri,
-      grant_type: "authorization_code",
     }),
     {
       headers: {
