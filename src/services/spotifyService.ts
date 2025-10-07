@@ -1,6 +1,6 @@
 import axios from "axios";
 import qs from "qs";
-import { env } from "process";
+import { env } from "../config/env";
 import { spotifyApi } from "../config/spotifyApi";
 const tokenUrl = "https://accounts.spotify.com/api/token";
 

@@ -33,35 +33,6 @@ router.get("/token", async (req, res) => {
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
-  // try {
-  //   const tokenResponse = await axios.post(
-  //     "https://accounts.spotify.com/api/token",
-  //     querystring.stringify({
-  //       grant_type: "authorization_code",
-  //       code,
-  //       redirect_uri: process.env.FRONTEND_URI,
-  //     }),
-  //     {
-  //       headers: {
-  //         Authorization:
-  //           "Basic " +
-  //           Buffer.from(
-  //             process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
-  //           ).toString("base64"),
-  //         "Content-Type": "application/x-www-form-urlencoded",
-  //       },
-  //     }
-  //   );
-
-  //   console.log("Spotify token:", tokenResponse.data);
-  //   res.json(tokenResponse.data);
-  // } catch (error: any) {
-  //   console.error(
-  //     "Token exchange error:",
-  //     error.response?.data || error.message
-  //   );
-  //   res.status(500).json({ error: "Failed to get token" });
-  // }
 });
 
 router.get("/refresh", async (req, res) => {
