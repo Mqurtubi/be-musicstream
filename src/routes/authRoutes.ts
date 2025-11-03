@@ -5,21 +5,87 @@ import {
   getUserProfile,
   refreshAccessToken,
 } from "../services/spotifyService";
+import { generateRandomString } from "../utils/randomString";
+import qs from "querystring";
+import { error } from "console";
+import axios from "axios";
 const router = Router();
 
 router.get("/login", (req, res) => {
   const scope = "user-read-private user-read-email playlist-read-private";
-  const authUrl =
-    "https://accounts.spotify.com/authorize" +
-    "?response_type=code" +
-    "&client_id=" +
-    process.env.CLIENT_ID +
-    "&scope=" +
-    encodeURIComponent(scope) +
-    "&redirect_uri=" +
-    encodeURIComponent(process.env.FRONTEND_URI);
+  const state = generateRandomString(16);
+  res.cookie("spotify_auth_state", state, {
+    httpOnly: true,
+    secure: true,
+    sameSite: "lax",
+  });
+  res.redirect(
+    "https://accounts.spotify.com/authorize?" +
+      qs.stringify({
+        response_type: "code",
+        client_id: process.env.CLIENT_ID,
+        scope: scope,
+        redirect_uri: process.env.FRONTEND_URI,
+        state: state,
+      })
+  );
+});
 
-  res.redirect(authUrl);
+router.get("/callback", async (req, res) => {
+  const code = (req.query.code as string) || null;
+  const state = (req.query.state as string) || null;
+  const storedState = req.cookies.spotify_auth_state;
+
+  if (!state || state !== storedState) {
+    return res.redirect(
+      process.env.FRONTEND_URI +
+        "/?" +
+        qs.stringify({ error: "state_mismatch" })
+    );
+  }
+
+  try {
+    const basicAuth =
+      "Basic " +
+      Buffer.from(
+        process.env.CLIENT_ID + ":" + process.env.CLIENT_SECRET
+      ).toString("base64");
+
+    const tokenRes = await axios.post(
+      "https://accounts.spotify.com/api/token",
+      qs.stringify({
+        code,
+        redirect_uri: process.env.REDIRECT_URI,
+        grant_type: "authorization_code",
+      }),
+      {
+        headers: {
+          Authorization: basicAuth,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+      }
+    );
+
+    const { access_token, refresh_token, expires_in } = tokenRes.data;
+
+    res.cookie("spotify_refresh", refresh_token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+    });
+
+    res.clearCookie("spotify_auth_state");
+
+    res.redirect(
+      process.env.FRONTEND_URI + "/?" + qs.stringify({ login: "success" })
+    );
+  } catch (error) {
+    console.log(error);
+    res.redirect(
+      process.env.FRONTEND_URI + "/?" + qs.stringify({ error: "invalid_token" })
+    );
+  }
 });
 
 router.get("/token", async (req, res) => {
