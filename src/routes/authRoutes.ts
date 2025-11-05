@@ -31,6 +31,18 @@ router.get("/login", (req, res) => {
   );
 });
 
+router.get("/logout",(req,res)=>{
+  const cookies = Object.keys(req.cookies || {})
+  cookies.forEach((cookie)=>{
+    res.clearCookie(cookie,{
+      httpOnly:true,
+      secure:true,
+      sameSite:"lax"
+    })
+  })
+  res.redirect("http://127.0.0.1:5173/")
+})
+
 router.get("/callback", async (req, res) => {
   const code = (req.query.code as string) || null;
   const state = (req.query.state as string) || null;
