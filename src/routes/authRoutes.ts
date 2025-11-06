@@ -31,17 +31,17 @@ router.get("/login", (req, res) => {
   );
 });
 
-router.get("/logout",(req,res)=>{
-  const cookies = Object.keys(req.cookies || {})
-  cookies.forEach((cookie)=>{
-    res.clearCookie(cookie,{
-      httpOnly:true,
-      secure:true,
-      sameSite:"lax"
-    })
-  })
-  res.redirect("http://127.0.0.1:5173/")
-})
+router.get("/logout", (req, res) => {
+  const cookies = Object.keys(req.cookies || {});
+  cookies.forEach((cookie) => {
+    res.clearCookie(cookie, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "lax",
+    });
+  });
+  res.redirect("http://127.0.0.1:5173/");
+});
 
 router.get("/callback", async (req, res) => {
   const code = (req.query.code as string) || null;
@@ -146,18 +146,30 @@ router.get("/refresh", async (req, res) => {
 router.get("/me", async (req, res) => {
   const refreshToken = req.cookies.spotify_refresh;
   if (!refreshToken) return res.status(400).json({ error: "No access token" });
-  const tokenData = await refreshAccessToken(refreshToken);
-  const accessToken = tokenData.access_token;
+  try {
+    const tokenData = await refreshAccessToken(refreshToken);
+    const accessToken = tokenData.access_token;
 
-  const profile = await getUserProfile(accessToken);
-  res.json(profile);
+    const profile = await getUserProfile(accessToken);
+    res.json(profile);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 router.get("/me/playlists", async (req, res) => {
-  const accessToken = req.query.access_token as string;
-  if (!accessToken) return res.status(400).json({ error: "No access token" });
-  const playlist = await getUserPlaylist(accessToken);
-  res.json(playlist);
+  const refreshToken = req.cookies.spotify_refresh;
+  if (!refreshToken) return res.status(400).json({ error: "No access token" });
+  try {
+    const tokenData = await refreshAccessToken(refreshToken);
+    const accessToken = tokenData.access_token;
+
+    const playlist = await getUserPlaylist(accessToken);
+
+    res.json(playlist);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 export default router;

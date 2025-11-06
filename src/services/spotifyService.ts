@@ -76,6 +76,6 @@ export async function getUserProfile(
   return data;
 }
 export async function getUserPlaylist(accessToken: string) {
-  const { data } = await spotifyApi(accessToken).get("/me/playlist");
-  return data.items;
+  const { data } = await spotifyApi(accessToken).get("/me/playlists");
+  return data;
 }
