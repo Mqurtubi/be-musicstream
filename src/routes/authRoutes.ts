@@ -4,15 +4,22 @@ import {
   getUserPlayer,
   getUserPlaylist,
   getUserProfile,
+  getUserTopArtist,
+  getUserTopTracks,
   refreshAccessToken,
 } from "../services/spotifyService";
 import { generateRandomString } from "../utils/randomString";
 import qs from "querystring";
 import axios from "axios";
+import { error } from "console";
 const router = Router();
 
 router.get("/login", (req, res) => {
-  const scope = ["user-read-private user-read-email playlist-read-private","user-read-playback-state"].join();
+  const scope = [
+    "user-read-private user-read-email playlist-read-private",
+    "user-read-playback-state",
+    "user-top-read",
+  ].join();
   const state = generateRandomString(16);
   res.cookie("spotify_auth_state", state, {
     httpOnly: true,
@@ -171,18 +178,47 @@ router.get("/me/playlists", async (req, res) => {
   }
 });
 
-router.get("/me/player", async (req,res) => {
+router.get("/me/top/artists", async (req, res) => {
   const refreshToken = req.cookies.spotify_refresh;
-  if(!refreshToken) return res.status(400).json({error:"No access token"})
+  if (!refreshAccessToken)
+    return res.status(400).json({ error: "No access token" });
   try {
-    const tokenData = await refreshAccessToken(refreshToken)
-    const accessToken = tokenData.access_token
-    const player = await getUserPlayer(accessToken)
+    const tokenData = await refreshAccessToken(refreshToken);
+    const accessToken = tokenData.access_token;
+    const topArtists = await getUserTopArtist(accessToken);
 
-    res.json(player)
+    res.json(topArtists);
   } catch (error) {
-    res.status(500).json({error: error.message})
+    res.status(500).json({ error: error.message });
   }
-})
+});
+
+router.get("/me/top/tracks", async (req, res) => {
+  const refreshToken = req.cookies.spotify_refresh;
+  if (!refreshToken) return res.status(400).json({ error: "No access token" });
+  try {
+    const tokenData = await refreshAccessToken(refreshToken);
+    const accessToken = tokenData.access_token;
+    const topTracks = await getUserTopTracks(accessToken);
+
+    res.json(topTracks);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.get("/me/player", async (req, res) => {
+  const refreshToken = req.cookies.spotify_refresh;
+  if (!refreshToken) return res.status(400).json({ error: "No access token" });
+  try {
+    const tokenData = await refreshAccessToken(refreshToken);
+    const accessToken = tokenData.access_token;
+    const player = await getUserPlayer(accessToken);
+
+    res.json(player);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
 export default router;
