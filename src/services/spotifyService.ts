@@ -79,3 +79,8 @@ export async function getUserPlaylist(accessToken: string) {
   const { data } = await spotifyApi(accessToken).get("/me/playlists");
   return data;
 }
+export async function getUserPlayer(accessToken:string){
+  const { data } = await spotifyApi(accessToken).get("/me/player");
+  return data;
+}
+
