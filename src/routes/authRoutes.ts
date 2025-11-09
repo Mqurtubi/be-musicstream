@@ -11,7 +11,6 @@ import {
 import { generateRandomString } from "../utils/randomString";
 import qs from "querystring";
 import axios from "axios";
-import { error } from "console";
 const router = Router();
 
 router.get("/login", (req, res) => {
